@@ -1,12 +1,10 @@
 [package]
-name = "game-rockpaperscissors"
+name = "tic-tac-toe"
 version = "0.1.0"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-simurgh-core = { path = "../simurgh-core" }
+simurgh-core = { path = "../../simurgh-core" }
 
-rand = "0.8.4"
-argparse = "0.2.2"

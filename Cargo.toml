@@ -1,7 +1,7 @@
 [workspace]
 members = [
     "simurgh-core",
-    "game-tictactoe",
-    "game-rockpaperscissors",
+    "games/rock-paper-scissors",
+    "games/tic-tac-toe",
 ]
 
