@@ -8,3 +8,5 @@ edition = "2018"
 [dependencies]
 simurgh-core = { path = "../../simurgh-core" }
 
+argparse = "0.2"
+
