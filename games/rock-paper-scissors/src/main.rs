@@ -1,27 +1,67 @@
-
+use blarg::{CommandLineParser, Parameter, Scalar};
+use rand::distributions::{Distribution, Standard};
+use rand::{thread_rng, Rng};
 use std::cmp;
 use std::convert::TryInto;
-use rand::{thread_rng, Rng};
-use rand::distributions::{Distribution, Standard};
-use argparse::{ArgumentParser, Store};
-
+use std::str::FromStr;
 
 const PLAYER_A: &str = "Player A";
 const PLAYER_B: &str = "Player B";
 
+#[derive(Debug)]
+enum Gameplay {
+    PlayerPlayer,
+    PlayerComputer,
+    ComputerPlayer,
+    ComputerComputer,
+}
+
+impl std::fmt::Display for Gameplay {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Gameplay::PlayerPlayer => write!(f, "pp | PlayerPlayer"),
+            Gameplay::PlayerComputer => write!(f, "pc | PlayerComputer"),
+            Gameplay::ComputerPlayer => write!(f, "cp | ComputerPlayer"),
+            Gameplay::ComputerComputer => write!(f, "cc | ComputerComputer"),
+        }
+    }
+}
+
+impl FromStr for Gameplay {
+    type Err = String;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match value.to_lowercase().as_str() {
+            "pp" | "playerplayer" => Ok(Gameplay::PlayerPlayer),
+            "pc" | "playercomputer" => Ok(Gameplay::PlayerComputer),
+            "cp" | "computerplayer" => Ok(Gameplay::ComputerPlayer),
+            "cc" | "computercomputer" => Ok(Gameplay::ComputerComputer),
+            _ => Err(format!("unknown: {}", value)),
+        }
+    }
+}
 
 fn main() {
     let mut rounds: usize = 0;
-    let mut gameplay: String = String::new();
+    let mut gameplay: Gameplay = Gameplay::ComputerComputer;
 
-    {
-        let mut ap = ArgumentParser::new();
-        ap.refer(&mut rounds)
-            .add_argument("rounds", Store, "the number of rounds to play");
-        ap.refer(&mut gameplay)
-            .add_argument("gameplay", Store, "the type of gameplay -- wish it could be a 'choice'");
-        ap.parse_args_or_exit();
-    }
+    let clp = CommandLineParser::new("rock-paper-scissors");
+    let parser = clp
+        .add(
+            Parameter::argument(Scalar::new(&mut rounds), "rounds")
+                .help("The number of rounds to play."),
+        )
+        .add(
+            Parameter::argument(Scalar::new(&mut gameplay), "gameplay")
+                .help("The type of gameplay.")
+                .choice(Gameplay::PlayerPlayer, "A player vs. player game.")
+                .choice(Gameplay::PlayerComputer, "A player vs. computer game.")
+                .choice(Gameplay::ComputerPlayer, "A computer vs. player game.")
+                .choice(Gameplay::ComputerComputer, "A computer vs. computer game."),
+        )
+        .build()
+        .expect("a valid parser configuration");
+    parser.parse();
 
     let score: (usize, usize, usize) = (0..rounds)
         .map(|round| {
@@ -37,15 +77,15 @@ fn main() {
                 (true, false) => {
                     cA += 1;
                     Some(PLAYER_A)
-                },
+                }
                 (false, true) => {
                     cB += 1;
                     Some(PLAYER_B)
-                },
+                }
                 (_, _) => {
                     cT += 1;
                     None
-                },
+                }
             };
 
             match winner {
@@ -62,13 +102,12 @@ fn main() {
     println!("They tied {} rounds.", score.2);
 }
 
-
-fn generate_round(gameplay: &String) -> (Hand, Hand) {
-    match gameplay.as_str() {
-        "pp" => (human_hand(PLAYER_A), human_hand(PLAYER_B)),
-        "cp" => (computer_hand(), human_hand(PLAYER_B)),
-        "pc" => (human_hand(PLAYER_A), computer_hand()),
-        _ => (computer_hand(), computer_hand()),
+fn generate_round(gameplay: &Gameplay) -> (Hand, Hand) {
+    match gameplay {
+        Gameplay::PlayerPlayer => (human_hand(PLAYER_A), human_hand(PLAYER_B)),
+        Gameplay::PlayerComputer => (human_hand(PLAYER_A), computer_hand()),
+        Gameplay::ComputerPlayer => (computer_hand(), human_hand(PLAYER_B)),
+        Gameplay::ComputerComputer => (computer_hand(), computer_hand()),
     }
 }
 
@@ -146,10 +185,8 @@ impl cmp::Ord for Hand {
     }
 }
 
-
 impl Distribution<Hand> for Standard {
     fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Hand {
         HANDS[rng.gen_range(0..3)]
     }
 }
-

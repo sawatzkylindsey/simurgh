@@ -9,4 +9,4 @@ edition = "2018"
 simurgh-core = { path = "../../simurgh-core" }
 
 rand = "0.8.4"
-argparse = "0.2.2"
+blarg = "0.1"
