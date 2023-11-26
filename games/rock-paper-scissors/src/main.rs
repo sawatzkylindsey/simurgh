@@ -1,4 +1,4 @@
-use blarg::{CommandLineParser, Parameter, Scalar};
+use blarg::{CommandLineParser, prelude::*, Parameter, Scalar};
 use rand::distributions::{Distribution, Standard};
 use rand::{thread_rng, Rng};
 use std::cmp;
@@ -59,8 +59,7 @@ fn main() {
                 .choice(Gameplay::ComputerPlayer, "A computer vs. player game.")
                 .choice(Gameplay::ComputerComputer, "A computer vs. computer game."),
         )
-        .build()
-        .expect("a valid parser configuration");
+        .build();
     parser.parse();
 
     let score: (usize, usize, usize) = (0..rounds)
@@ -69,21 +68,21 @@ fn main() {
             generate_round(&gameplay)
         })
         .map(|(a, b)| {
-            let mut cA = 0;
-            let mut cB = 0;
-            let mut cT = 0;
+            let mut c_a = 0;
+            let mut c_b = 0;
+            let mut c_t = 0;
 
             let winner = match (a > b, b > a) {
                 (true, false) => {
-                    cA += 1;
+                    c_a += 1;
                     Some(PLAYER_A)
                 }
                 (false, true) => {
-                    cB += 1;
+                    c_b += 1;
                     Some(PLAYER_B)
                 }
                 (_, _) => {
-                    cT += 1;
+                    c_t += 1;
                     None
                 }
             };
@@ -93,7 +92,7 @@ fn main() {
                 None => println!("{} vs {} -> Tie!", a, b),
             };
 
-            (cA, cB, cT)
+            (c_a, c_b, c_t)
         })
         .fold((0, 0, 0), |acc, i| (acc.0 + i.0, acc.1 + i.1, acc.2 + i.2));
 

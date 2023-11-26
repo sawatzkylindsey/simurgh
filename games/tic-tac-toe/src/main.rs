@@ -11,8 +11,7 @@ fn main() {
             Parameter::argument(Scalar::new(&mut player_1), "player-1")
                 .help("The type[-name] of player one (ex: Manual-Alice, Automatic, etc)."),
         )
-        .build()
-        .expect("a valid parser configuration");
+        .build();
     parser.parse();
 
     println!("{}", player_1.to_string());
