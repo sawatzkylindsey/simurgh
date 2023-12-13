@@ -1,5 +1,5 @@
 [package]
-name = "rock-paper-scissors"
+name = "sudoku"
 version = "0.1.0"
 edition = "2018"
 
@@ -8,5 +8,13 @@ edition = "2018"
 [dependencies]
 simurgh-core = { path = "../../simurgh-core" }
 
-rand = "0.8.4"
-blarg = "1.0.4"
+blarg = { version = "1.0.4", features = ["tracing_debug"] }
+lazy_static = "1.4.0"
+regex = "1.10.2"
+
+[dev-dependencies]
+criterion = "0.5.1"
+
+[[bench]]
+name = "board"
+harness = false

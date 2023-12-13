@@ -8,4 +8,4 @@ edition = "2018"
 [dependencies]
 simurgh-core = { path = "../../simurgh-core" }
 
-blarg = "1.0.3"
+blarg = "1.0.4"
