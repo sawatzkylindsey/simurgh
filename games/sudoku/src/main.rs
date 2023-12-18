@@ -1,5 +1,3 @@
-// use crate::model::board::SudokuProblem;
-// use crate::solver::search::Search;
 use blarg::{CommandLineParser, GeneralParser, Parameter, Scalar};
 use sudoku::model::board::SudokuProblem;
 use sudoku::solver::search::Search;
@@ -11,10 +9,11 @@ struct Parameters {
 
 fn main() {
     let parameters = parse();
-    println!("{parameters:?}");
+    println!("{:?}", parameters.problem);
 
     let solver = Search::new(parameters.problem);
-    solver.run();
+    let solution = solver.run().unwrap();
+    println!("{solution:?}");
 }
 
 fn parse() -> Parameters {

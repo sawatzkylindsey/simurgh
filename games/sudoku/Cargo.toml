@@ -13,8 +13,10 @@ lazy_static = "1.4.0"
 regex = "1.10.2"
 
 [dev-dependencies]
+assert_matches = "1.5"
 criterion = "0.5.1"
+pprof = { version = "0.13.0", features = ["flamegraph", "criterion", "protobuf-codec"]}
 
 [[bench]]
-name = "board"
+name = "dfs"
 harness = false

@@ -1,8 +1,5 @@
-use lazy_static::lazy_static;
-use regex::Regex;
-use std::convert::{TryFrom, TryInto};
-use std::fmt::{Display, Formatter};
-use std::str::FromStr;
+use std::convert::TryFrom;
+use std::fmt::Formatter;
 
 #[derive(Debug, PartialEq, Eq)]
 #[non_exhaustive]
@@ -13,7 +10,7 @@ pub struct Cell {
 }
 
 impl Cell {
-    fn row_column(row: usize, column: usize) -> Result<Cell, ()> {
+    pub fn row_column(row: usize, column: usize) -> Result<Cell, ()> {
         if row < 9 && column < 9 {
             let index = (&row * 9) + &column;
             Ok(Self { row, column, index })
@@ -22,7 +19,7 @@ impl Cell {
         }
     }
 
-    fn index(index: usize) -> Result<Cell, ()> {
+    pub fn index(index: usize) -> Result<Cell, ()> {
         if index < 9 * 9 {
             let row = &index / 9;
             let column = &index % 9;
@@ -32,6 +29,18 @@ impl Cell {
         }
     }
 }
+
+const CANDIDATES: [SudokuValue; 9] = [
+    SudokuValue::One,
+    SudokuValue::Two,
+    SudokuValue::Three,
+    SudokuValue::Four,
+    SudokuValue::Five,
+    SudokuValue::Six,
+    SudokuValue::Seven,
+    SudokuValue::Eight,
+    SudokuValue::Nine,
+];
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum SudokuValue {
@@ -62,6 +71,10 @@ impl SudokuValue {
             SudokuValue::Nine => 9,
         }
     }
+
+    pub(crate) fn candidates() -> &'static [SudokuValue] {
+        &CANDIDATES[..]
+    }
 }
 
 impl TryFrom<char> for SudokuValue {
@@ -91,7 +104,7 @@ impl std::fmt::Debug for SudokuValue {
 }
 
 impl SudokuValue {
-    fn to_char(&self) -> char {
+    pub(crate) fn to_char(&self) -> char {
         match self {
             SudokuValue::Unknown => '0',
             SudokuValue::One => '1',
@@ -149,42 +162,61 @@ mod tests {
             SudokuValue::try_from(SudokuValue::Unknown.to_char()).unwrap(),
             SudokuValue::Unknown,
         );
+        assert_eq!(SudokuValue::Unknown.value(), 0);
+
         assert_eq!(
             SudokuValue::try_from(SudokuValue::One.to_char()).unwrap(),
             SudokuValue::One,
         );
+        assert_eq!(SudokuValue::One.value(), 1);
+
         assert_eq!(
             SudokuValue::try_from(SudokuValue::Two.to_char()).unwrap(),
             SudokuValue::Two,
         );
+        assert_eq!(SudokuValue::Two.value(), 2);
+
         assert_eq!(
             SudokuValue::try_from(SudokuValue::Three.to_char()).unwrap(),
             SudokuValue::Three,
         );
+        assert_eq!(SudokuValue::Three.value(), 3);
+
         assert_eq!(
             SudokuValue::try_from(SudokuValue::Four.to_char()).unwrap(),
             SudokuValue::Four,
         );
+        assert_eq!(SudokuValue::Four.value(), 4);
+
         assert_eq!(
             SudokuValue::try_from(SudokuValue::Five.to_char()).unwrap(),
             SudokuValue::Five,
         );
+        assert_eq!(SudokuValue::Five.value(), 5);
+
         assert_eq!(
             SudokuValue::try_from(SudokuValue::Six.to_char()).unwrap(),
             SudokuValue::Six,
         );
+        assert_eq!(SudokuValue::Six.value(), 6);
+
         assert_eq!(
             SudokuValue::try_from(SudokuValue::Seven.to_char()).unwrap(),
             SudokuValue::Seven,
         );
+        assert_eq!(SudokuValue::Seven.value(), 7);
+
         assert_eq!(
             SudokuValue::try_from(SudokuValue::Eight.to_char()).unwrap(),
             SudokuValue::Eight,
         );
+        assert_eq!(SudokuValue::Eight.value(), 8);
+
         assert_eq!(
             SudokuValue::try_from(SudokuValue::Nine.to_char()).unwrap(),
             SudokuValue::Nine,
         );
+        assert_eq!(SudokuValue::Nine.value(), 9);
     }
 
     #[test]

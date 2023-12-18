@@ -2,15 +2,14 @@ use crate::model::cell::{Cell, SudokuValue};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::convert::{TryFrom, TryInto};
-use std::iter::{Skip, Take};
-use std::slice::Iter;
-use std::str::{FromStr, ParseBoolError};
+use std::fmt::Formatter;
+use std::str::FromStr;
 
 lazy_static! {
     static ref PROBLEM_REGEX: Regex = Regex::new(r"^[0-9]{81}$").unwrap();
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct SudokuProblem {
     puzzle: [SudokuValue; 9 * 9],
 }
@@ -39,15 +38,19 @@ impl FromStr for SudokuProblem {
     }
 }
 
+impl std::fmt::Debug for SudokuProblem {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            self.puzzle.iter().map(|v| v.to_char()).collect::<String>()
+        )
+    }
+}
+
 impl SudokuProblem {
     fn new(puzzle: [SudokuValue; 9 * 9]) -> Self {
         Self { puzzle }
-        //
-        // if problem.is_valid() {
-        //     Ok(problem)
-        // } else {
-        //     Err(())
-        // }
     }
 
     fn rows(&self) -> Vec<[SudokuValue; 9]> {
@@ -151,10 +154,17 @@ impl SudokuProblem {
                 .all(|section| solved_check(&section[..]))
     }
 
-    fn replace(&self, cell: Cell, value: SudokuValue) -> SudokuProblem {
+    pub(crate) fn replace(&self, cell: &Cell, value: SudokuValue) -> SudokuProblem {
         let mut puzzle = self.puzzle.clone();
         puzzle[cell.index] = value;
         SudokuProblem::new(puzzle)
+    }
+
+    pub fn position(&self, value: &SudokuValue) -> Option<Cell> {
+        self.puzzle
+            .iter()
+            .position(|v| v == value)
+            .map(|i| Cell::index(i).expect("must be a valid index"))
     }
 }
 
@@ -323,6 +333,49 @@ mod tests {
         )
         .unwrap();
         assert!(!problem.is_complete());
+    }
+
+    #[test]
+    fn replace() {
+        let problem = SudokuProblem::from_str(
+            "012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+        )
+        .unwrap();
+
+        assert_eq!(
+            problem.replace(&Cell::row_column(0, 0).unwrap(), SudokuValue::One),
+            SudokuProblem::from_str(
+                "112345678901234567890123456789012345678901234567890123456789012345678901234567890",
+            )
+            .unwrap()
+        );
+        assert_eq!(
+            problem.replace(&Cell::row_column(0, 8).unwrap(), SudokuValue::Nine),
+            SudokuProblem::from_str(
+                "012345679901234567890123456789012345678901234567890123456789012345678901234567890",
+            )
+            .unwrap()
+        );
+    }
+
+    #[test]
+    fn position() {
+        let problem = SudokuProblem::from_str(
+            "012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+        )
+        .unwrap();
+
+        assert_eq!(
+            problem.position(&SudokuValue::Unknown),
+            Some(Cell::index(0).unwrap()),
+        );
+
+        assert_eq!(
+            problem.position(&SudokuValue::One),
+            Some(Cell::index(1).unwrap()),
+        );
+
+        assert_eq!(SudokuProblem::default().position(&SudokuValue::One), None,);
     }
 
     fn as_section(snippet: &str) -> [SudokuValue; 9] {
